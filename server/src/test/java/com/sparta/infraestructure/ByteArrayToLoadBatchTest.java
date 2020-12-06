@@ -122,7 +122,6 @@ class ByteArrayToLoadBatchTest {
     }
 
     @Test
-    @Disabled
     void testToRecordWithWrongCRC() throws IOException {
         Sensor[] sensorArray = new Sensor[]{
                 new Sensor("1", new Random().nextInt()),
@@ -133,11 +132,9 @@ class ByteArrayToLoadBatchTest {
         };
         Record record = new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray);
         byte[] recordBytes = recordToBytes(record, 12345L);
-        Record value = ByteArrayToLoadBatch.toRecord(recordBytes);
         RuntimeException ex = assertThrows(RuntimeException.class,
                 () -> ByteArrayToLoadBatch.toRecord(recordBytes));
-        assertThat(ex.getMessage()).contains("invalid CRC32 checksum");
-        assertThat(value).isEqualTo(record);
+        assertThat(ex.getMessage()).contains("invalid CRC32");
     }
 
     private byte[] stringToBytes(String value) throws IOException {

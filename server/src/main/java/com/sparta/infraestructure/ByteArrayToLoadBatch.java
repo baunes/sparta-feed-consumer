@@ -6,8 +6,12 @@ import com.sparta.domain.Sensor;
 import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
+import java.util.zip.Checksum;
 
 public final class ByteArrayToLoadBatch {
 
@@ -62,18 +66,20 @@ public final class ByteArrayToLoadBatch {
      */
     public static Sensor[] toSensorArray(byte[] bytes) throws IOException {
         bytes = Objects.requireNonNull(bytes, "bytes[] can not be null");
-        DataInputStream dis = toDataOutputStream(bytes);
+        DataInputStreamWithCRC dis = toDataOutputStream(bytes);
 
-        return readSensorArray(dis);
+        return readSensorArray(dis).sensors;
     }
 
-    public static Sensor[] readSensorArray(DataInputStream dis) throws IOException {
+    private static SensorArrayAndCRC readSensorArray(DataInputStreamWithCRC dis) throws IOException {
         int length = dis.readInt();
+        dis.resetChecksum();
         Sensor[] sensors = new Sensor[length];
         for (int index = 0; index < length; index++) {
             sensors[index] = readSensor(dis);
         }
-        return sensors;
+        long checksum = dis.getChecksum();
+        return new SensorArrayAndCRC(sensors, checksum);
     }
 
     /**
@@ -85,20 +91,61 @@ public final class ByteArrayToLoadBatch {
      */
     public static Record toRecord(byte[] bytes) throws IOException {
         bytes = Objects.requireNonNull(bytes, "bytes[] can not be null");
-        DataInputStream dis = toDataOutputStream(bytes);
+        DataInputStreamWithCRC dis = toDataOutputStream(bytes);
 
         long recordIndex = dis.readLong();
         long timestamp = dis.readLong();
         String city = readString(dis);
-        Sensor[] sensorArray = readSensorArray(dis);
-        // TODO Check CRC32
+        SensorArrayAndCRC sensorArray = readSensorArray(dis);
+        long checksumCalculated = sensorArray.getChecksum();
+        long checksum = dis.readLong();
+        if (checksumCalculated != checksum) {
+            // TODO specialized Exception
+            throw new RuntimeException(String.format("invalid CRC32 [%s] checksum, expected to be [%s]", checksumCalculated, checksum));
+        }
 
-        return new Record(recordIndex, timestamp, city, sensorArray);
+        return new Record(recordIndex, timestamp, city, sensorArray.getSensors());
     }
 
-    private static DataInputStream toDataOutputStream(byte[] content) {
+    private static DataInputStreamWithCRC toDataOutputStream(byte[] content) {
         ByteArrayInputStream bais = new ByteArrayInputStream(content);
-        return new DataInputStream(bais);
+        return new DataInputStreamWithCRC(bais, new CRC32());
+    }
+
+    private static final class SensorArrayAndCRC {
+        private final Sensor[] sensors;
+        private final long checksum;
+
+        public SensorArrayAndCRC(Sensor[] sensors, long checksum) {
+            this.sensors = sensors;
+            this.checksum = checksum;
+        }
+
+        public Sensor[] getSensors() {
+            return sensors;
+        }
+
+        public long getChecksum() {
+            return checksum;
+        }
+    }
+
+    private static final class DataInputStreamWithCRC extends DataInputStream {
+
+        private final Checksum checksum;
+
+        public DataInputStreamWithCRC(InputStream is, Checksum checksum) {
+            super(new CheckedInputStream(is, checksum));
+            this.checksum = checksum;
+        }
+
+        public long getChecksum() {
+            return checksum.getValue();
+        }
+
+        public void resetChecksum() {
+            checksum.reset();
+        }
     }
 
 }
