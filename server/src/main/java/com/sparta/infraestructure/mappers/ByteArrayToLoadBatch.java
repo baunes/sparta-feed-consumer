@@ -1,4 +1,4 @@
-package com.sparta.infraestructure;
+package com.sparta.infraestructure.mappers;
 
 import com.sparta.domain.Record;
 import com.sparta.domain.Sensor;
