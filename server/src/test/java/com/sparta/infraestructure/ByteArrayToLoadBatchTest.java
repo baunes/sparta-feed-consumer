@@ -3,7 +3,6 @@ package com.sparta.infraestructure;
 
 import com.sparta.domain.Record;
 import com.sparta.domain.Sensor;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -41,6 +40,7 @@ class ByteArrayToLoadBatchTest {
     assertThat(value).isEqualTo(expected);
   }
 
+
   @Test
   void testToSensorWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
@@ -62,6 +62,7 @@ class ByteArrayToLoadBatchTest {
     Sensor value = ByteArrayToLoadBatch.toSensor(sensorBytes);
     assertThat(value).isEqualTo(sensor);
   }
+
 
   @Test
   void testToSensorArrayWithNull() {
@@ -137,6 +138,48 @@ class ByteArrayToLoadBatchTest {
     assertThat(ex.getMessage()).contains("invalid CRC32");
   }
 
+
+  @Test
+  void testToRecordArrayWithNull() {
+    NullPointerException ex = assertThrows(NullPointerException.class,
+      () -> ByteArrayToLoadBatch.toRecordArray(null));
+    assertThat(ex.getMessage()).contains("bytes[] can not be null");
+  }
+
+  @Test
+  void testToRecordArrayWithZeroBytes() {
+    assertThrows(EOFException.class, () -> {
+      ByteArrayToLoadBatch.toRecordArray(new byte[0]);
+    });
+  }
+
+  @Test
+  void testToRecordArrayWithBytes() throws IOException {
+    Sensor[] sensorArray1 = new Sensor[]{
+      new Sensor("1", new Random().nextInt()),
+      new Sensor("2", new Random().nextInt()),
+      new Sensor("3", new Random().nextInt()),
+      new Sensor("4", new Random().nextInt()),
+      new Sensor("5", new Random().nextInt())
+    };
+
+    Sensor[] sensorArray2 = new Sensor[]{
+      new Sensor("1", new Random().nextInt()),
+      new Sensor("2", new Random().nextInt()),
+      new Sensor("3", new Random().nextInt()),
+      new Sensor("4", new Random().nextInt()),
+      new Sensor("5", new Random().nextInt())
+    };
+    Record[] recordArray = new Record[]{
+      new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray1),
+      new Record(1L, System.currentTimeMillis(), "Geneva", sensorArray2)
+    };
+    byte[] recordArrayBytes = recordArrayToBytes(recordArray);
+    Record[] value = ByteArrayToLoadBatch.toRecordArray(recordArrayBytes);
+    assertThat(value).isEqualTo(recordArray);
+  }
+
+
   private byte[] stringToBytes(String value) throws IOException {
     byte[] valueBytes = value.getBytes(StandardCharsets.UTF_8);
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -191,16 +234,14 @@ class ByteArrayToLoadBatchTest {
     dos.writeInt(valueBytes.length);
     dos.write(valueBytes);
 
-    // Length
-    dos.writeInt(record.getSensor().length);
-
-    // SensorCollection
     CRC32 crc32 = new CRC32();
-    for (Sensor sensor : record.getSensor()) {
-      byte[] bytes = sensorToBytes(sensor);
-      crc32.update(bytes);
-      dos.write(bytes);
-    }
+    byte[] sensorArrayBytes = sensorArrayToBytes(record.getSensor());
+    // Bytes of SensorData
+    dos.writeInt(sensorArrayBytes.length);
+
+    // Sensor Data
+    dos.write(sensorArrayBytes);
+    crc32.update(sensorArrayBytes);
 
     // CRC32
     if (crc32Value != -1) {
@@ -209,6 +250,17 @@ class ByteArrayToLoadBatchTest {
       dos.writeLong(crc32.getValue());
     }
 
+    return baos.toByteArray();
+  }
+
+  private byte[] recordArrayToBytes(Record[] recordArray) throws IOException {
+    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+    DataOutputStream dos = new DataOutputStream(baos);
+
+    dos.writeLong(recordArray.length);
+    for (Record record : recordArray) {
+      dos.write(recordToBytes(record));
+    }
     return baos.toByteArray();
   }
 
