@@ -1,4 +1,4 @@
-package com.sparta.infraestructure.mappers.controllers;
+package com.sparta.infraestructure.controllers;
 
 import com.sparta.application.services.records.GetTotalService;
 import com.sparta.application.services.records.LoadBatchService;
