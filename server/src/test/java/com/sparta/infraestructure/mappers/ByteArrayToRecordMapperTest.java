@@ -126,7 +126,7 @@ class ByteArrayToRecordMapperTest {
     );
     Record record = new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray);
     byte[] recordBytes = recordToBytes(record, 12345L);
-    RuntimeException ex = assertThrows(RuntimeException.class,
+    RuntimeException ex = assertThrows(InvalidCRC32Exception.class,
       () -> ByteArrayToRecordMapper.toRecord(recordBytes));
     assertThat(ex.getMessage()).contains("invalid CRC32");
   }

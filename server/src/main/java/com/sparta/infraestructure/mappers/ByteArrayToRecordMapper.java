@@ -107,8 +107,7 @@ public final class ByteArrayToRecordMapper {
     long checksumCalculated = dis.getChecksum();
     long checksum = dis.readLong();
     if (checksumCalculated != checksum) {
-      // TODO specialized Exception
-      throw new RuntimeException(String.format("invalid CRC32 [%s] checksum, expected to be [%s]", checksumCalculated, checksum));
+      throw new InvalidCRC32Exception(String.format("invalid CRC32 [%s] checksum, expected to be [%s]", checksumCalculated, checksum));
     }
 
     return new Record(recordIndex, timestamp, city, Arrays.asList(sensorArray));
