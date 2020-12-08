@@ -22,7 +22,8 @@ public class RecordRepositoryImpl implements RecordRepository {
   }
 
   @Override
-  public int total(String provider) {
-    return this.store.get(provider).size();
+  public int getTotalByProvider(String provider) {
+    List<Record> records = this.store.get(provider);
+    return records != null ? records.size() : 0;
   }
 }

@@ -56,8 +56,9 @@ class RecordRepositoryImplTest {
       new Record(3L, System.currentTimeMillis(), "Madrid", Collections.emptyList())
     ));
 
-    assertThat(recordRepository.getAllByProvider("provider1")).hasSize(1);
-    assertThat(recordRepository.getAllByProvider("provider2")).hasSize(3);
+    assertThat(recordRepository.getTotalByProvider("provider-that-not-exists")).isEqualTo(0);
+    assertThat(recordRepository.getTotalByProvider("provider1")).isEqualTo(1);
+    assertThat(recordRepository.getTotalByProvider("provider2")).isEqualTo(3);
   }
 
 }

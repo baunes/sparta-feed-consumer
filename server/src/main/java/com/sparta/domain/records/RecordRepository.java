@@ -13,7 +13,7 @@ public interface RecordRepository {
   void saveAllByProvider(String provider, List<Record> records);
 
   /**
-   * Retrieves all the records of the procvider.
+   * Retrieves all the records of the provider.
    *
    * @param provider Provider
    * @return Records of the provider
@@ -26,6 +26,6 @@ public interface RecordRepository {
    * @param provider Provider.
    * @return Total records stored.
    */
-  int total(String provider);
+  int getTotalByProvider(String provider);
 
 }

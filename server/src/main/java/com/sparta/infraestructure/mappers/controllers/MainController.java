@@ -1,5 +1,6 @@
 package com.sparta.infraestructure.mappers.controllers;
 
+import com.sparta.application.services.records.GetTotalService;
 import com.sparta.application.services.records.LoadBatchService;
 import com.sparta.domain.records.Record;
 import com.sparta.infraestructure.mappers.ByteArrayToRecordMapper;
@@ -20,9 +21,11 @@ public class MainController {
   private static final Logger logger = LoggerFactory.getLogger(MainController.class);
 
   private final LoadBatchService loadBatchService;
+  private final GetTotalService getTotalService;
 
-  public MainController(LoadBatchService loadBatchService) {
+  public MainController(LoadBatchService loadBatchService, GetTotalService getTotalService) {
     this.loadBatchService = loadBatchService;
+    this.getTotalService = getTotalService;
   }
 
   @PostMapping("/load/{provider}")
@@ -35,7 +38,7 @@ public class MainController {
 
   @GetMapping("/data/{provider}/total")
   public int total(@PathVariable("provider") String provider) {
-    return -1;
+    return getTotalService.execute(provider);
   }
 
 }
