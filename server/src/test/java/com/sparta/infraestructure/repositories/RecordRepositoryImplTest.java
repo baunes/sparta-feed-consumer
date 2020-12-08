@@ -2,11 +2,11 @@ package com.sparta.infraestructure.repositories;
 
 import com.sparta.domain.Record;
 import com.sparta.domain.RecordRepository;
-import com.sparta.domain.Sensor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -23,14 +23,14 @@ class RecordRepositoryImplTest {
   @Test
   void testSaveAll() {
     recordRepository.saveAllByProvider("provider1", Arrays.asList(
-      new Record(1L, System.currentTimeMillis(), "Valencia", new Sensor[0])
+      new Record(1L, System.currentTimeMillis(), "Valencia", Collections.emptyList())
     ));
     recordRepository.saveAllByProvider("provider2", Arrays.asList(
-      new Record(1L, System.currentTimeMillis(), "Geneva", new Sensor[0]),
-      new Record(2L, System.currentTimeMillis(), "Madrid", new Sensor[0])
+      new Record(1L, System.currentTimeMillis(), "Geneva", Collections.emptyList()),
+      new Record(2L, System.currentTimeMillis(), "Madrid", Collections.emptyList())
     ));
     recordRepository.saveAllByProvider("provider2", Arrays.asList(
-      new Record(3L, System.currentTimeMillis(), "Madrid", new Sensor[0])
+      new Record(3L, System.currentTimeMillis(), "Madrid", Collections.emptyList())
     ));
 
     List<Record> recordsProvider1 = recordRepository.getAllByProvider("provider1");
@@ -46,14 +46,14 @@ class RecordRepositoryImplTest {
   @Test
   void testCount() {
     recordRepository.saveAllByProvider("provider1", Arrays.asList(
-      new Record(1L, System.currentTimeMillis(), "Valencia", new Sensor[0])
+      new Record(1L, System.currentTimeMillis(), "Valencia", Collections.emptyList())
     ));
     recordRepository.saveAllByProvider("provider2", Arrays.asList(
-      new Record(1L, System.currentTimeMillis(), "Geneva", new Sensor[0]),
-      new Record(2L, System.currentTimeMillis(), "Madrid", new Sensor[0])
+      new Record(1L, System.currentTimeMillis(), "Geneva", Collections.emptyList()),
+      new Record(2L, System.currentTimeMillis(), "Madrid", Collections.emptyList())
     ));
     recordRepository.saveAllByProvider("provider2", Arrays.asList(
-      new Record(3L, System.currentTimeMillis(), "Madrid", new Sensor[0])
+      new Record(3L, System.currentTimeMillis(), "Madrid", Collections.emptyList())
     ));
 
     assertThat(recordRepository.getAllByProvider("provider1")).hasSize(1);

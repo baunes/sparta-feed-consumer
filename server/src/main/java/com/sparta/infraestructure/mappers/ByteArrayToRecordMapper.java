@@ -8,14 +8,15 @@ import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 import java.util.zip.Checksum;
 
-public final class ByteArrayToLoadBatch {
+public final class ByteArrayToRecordMapper {
 
-  private ByteArrayToLoadBatch() {
+  private ByteArrayToRecordMapper() {
   }
 
   /**
@@ -23,7 +24,7 @@ public final class ByteArrayToLoadBatch {
    *
    * @param bytes Byte array
    * @return The string read
-   * @throws IOException
+   * @throws IOException When an error reading from the stream occurs
    */
   public static String toString(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
@@ -43,7 +44,7 @@ public final class ByteArrayToLoadBatch {
    *
    * @param bytes Byte array
    * @return The sensor read
-   * @throws IOException
+   * @throws IOException When an error reading from the stream occurs
    */
   public static Sensor toSensor(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
@@ -63,7 +64,7 @@ public final class ByteArrayToLoadBatch {
    *
    * @param bytes Byte array
    * @return The sensor Array read
-   * @throws IOException
+   * @throws IOException When an error reading from the stream occurs
    */
   public static Sensor[] toSensorArray(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
@@ -86,7 +87,7 @@ public final class ByteArrayToLoadBatch {
    *
    * @param bytes Byte array
    * @return The Record read
-   * @throws IOException
+   * @throws IOException When an error reading from the stream occurs
    */
   public static Record toRecord(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
@@ -110,7 +111,7 @@ public final class ByteArrayToLoadBatch {
       throw new RuntimeException(String.format("invalid CRC32 [%s] checksum, expected to be [%s]", checksumCalculated, checksum));
     }
 
-    return new Record(recordIndex, timestamp, city, sensorArray);
+    return new Record(recordIndex, timestamp, city, Arrays.asList(sensorArray));
   }
 
   /**
@@ -118,7 +119,7 @@ public final class ByteArrayToLoadBatch {
    *
    * @param bytes Byte array
    * @return The Record array read
-   * @throws IOException
+   * @throws IOException When an error reading from the stream occurs
    */
   public static Record[] toRecordArray(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");

@@ -2,7 +2,6 @@ package com.sparta.infraestructure.mappers;
 
 import com.sparta.domain.Record;
 import com.sparta.domain.Sensor;
-import com.sparta.infraestructure.mappers.ByteArrayToLoadBatch;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -10,33 +9,33 @@ import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.util.zip.CRC32;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class ByteArrayToLoadBatchTest {
+class ByteArrayToRecordMapperTest {
 
   @Test
   void testToStringWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
-      () -> ByteArrayToLoadBatch.toString(null));
+      () -> ByteArrayToRecordMapper.toString(null));
     assertThat(ex.getMessage()).contains("bytes[] can not be null");
   }
 
   @Test
   void testToStringWithZeroBytes() {
-    assertThrows(EOFException.class, () -> {
-      ByteArrayToLoadBatch.toString(new byte[0]);
-    });
+    assertThrows(EOFException.class, () -> ByteArrayToRecordMapper.toString(new byte[0]));
   }
 
   @Test
   void testToStringWithBytes() throws IOException {
     String expected = "This is a test \uD83D\uDE00.";
     byte[] expectedBytes = stringToBytes(expected);
-    String value = ByteArrayToLoadBatch.toString(expectedBytes);
+    String value = ByteArrayToRecordMapper.toString(expectedBytes);
     assertThat(value).isEqualTo(expected);
   }
 
@@ -44,22 +43,20 @@ class ByteArrayToLoadBatchTest {
   @Test
   void testToSensorWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
-      () -> ByteArrayToLoadBatch.toSensor(null));
+      () -> ByteArrayToRecordMapper.toSensor(null));
     assertThat(ex.getMessage()).contains("bytes[] can not be null");
   }
 
   @Test
   void testToSensorWithZeroBytes() {
-    assertThrows(EOFException.class, () -> {
-      ByteArrayToLoadBatch.toSensor(new byte[0]);
-    });
+    assertThrows(EOFException.class, () -> ByteArrayToRecordMapper.toSensor(new byte[0]));
   }
 
   @Test
   void testToSensorWithBytes() throws IOException {
     Sensor sensor = new Sensor("1", new Random().nextInt());
     byte[] sensorBytes = sensorToBytes(sensor);
-    Sensor value = ByteArrayToLoadBatch.toSensor(sensorBytes);
+    Sensor value = ByteArrayToRecordMapper.toSensor(sensorBytes);
     assertThat(value).isEqualTo(sensor);
   }
 
@@ -67,15 +64,13 @@ class ByteArrayToLoadBatchTest {
   @Test
   void testToSensorArrayWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
-      () -> ByteArrayToLoadBatch.toSensorArray(null));
+      () -> ByteArrayToRecordMapper.toSensorArray(null));
     assertThat(ex.getMessage()).contains("bytes[] can not be null");
   }
 
   @Test
   void testToSensorArrayWithZeroBytes() {
-    assertThrows(EOFException.class, () -> {
-      ByteArrayToLoadBatch.toSensorArray(new byte[0]);
-    });
+    assertThrows(EOFException.class, () -> ByteArrayToRecordMapper.toSensorArray(new byte[0]));
   }
 
   @Test
@@ -87,8 +82,8 @@ class ByteArrayToLoadBatchTest {
       new Sensor("4", new Random().nextInt()),
       new Sensor("5", new Random().nextInt())
     };
-    byte[] sensorArrayBytes = sensorArrayToBytes(sensorArray);
-    Sensor[] value = ByteArrayToLoadBatch.toSensorArray(sensorArrayBytes);
+    byte[] sensorArrayBytes = sensorArrayToBytes(Arrays.asList(sensorArray));
+    Sensor[] value = ByteArrayToRecordMapper.toSensorArray(sensorArrayBytes);
     assertThat(value).isEqualTo(sensorArray);
   }
 
@@ -96,45 +91,43 @@ class ByteArrayToLoadBatchTest {
   @Test
   void testToRecordWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
-      () -> ByteArrayToLoadBatch.toRecord(null));
+      () -> ByteArrayToRecordMapper.toRecord(null));
     assertThat(ex.getMessage()).contains("bytes[] can not be null");
   }
 
   @Test
   void testToRecordWithZeroBytes() {
-    assertThrows(EOFException.class, () -> {
-      ByteArrayToLoadBatch.toRecord(new byte[0]);
-    });
+    assertThrows(EOFException.class, () -> ByteArrayToRecordMapper.toRecord(new byte[0]));
   }
 
   @Test
   void testToRecordWithBytes() throws IOException {
-    Sensor[] sensorArray = new Sensor[]{
+    List<Sensor> sensorArray = Arrays.asList(
       new Sensor("1", new Random().nextInt()),
       new Sensor("2", new Random().nextInt()),
       new Sensor("3", new Random().nextInt()),
       new Sensor("4", new Random().nextInt()),
       new Sensor("5", new Random().nextInt())
-    };
+    );
     Record record = new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray);
     byte[] recordBytes = recordToBytes(record);
-    Record value = ByteArrayToLoadBatch.toRecord(recordBytes);
+    Record value = ByteArrayToRecordMapper.toRecord(recordBytes);
     assertThat(value).isEqualTo(record);
   }
 
   @Test
   void testToRecordWithWrongCRC() throws IOException {
-    Sensor[] sensorArray = new Sensor[]{
+    List<Sensor> sensorArray = Arrays.asList(
       new Sensor("1", new Random().nextInt()),
       new Sensor("2", new Random().nextInt()),
       new Sensor("3", new Random().nextInt()),
       new Sensor("4", new Random().nextInt()),
       new Sensor("5", new Random().nextInt())
-    };
+    );
     Record record = new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray);
     byte[] recordBytes = recordToBytes(record, 12345L);
     RuntimeException ex = assertThrows(RuntimeException.class,
-      () -> ByteArrayToLoadBatch.toRecord(recordBytes));
+      () -> ByteArrayToRecordMapper.toRecord(recordBytes));
     assertThat(ex.getMessage()).contains("invalid CRC32");
   }
 
@@ -142,40 +135,38 @@ class ByteArrayToLoadBatchTest {
   @Test
   void testToRecordArrayWithNull() {
     NullPointerException ex = assertThrows(NullPointerException.class,
-      () -> ByteArrayToLoadBatch.toRecordArray(null));
+      () -> ByteArrayToRecordMapper.toRecordArray(null));
     assertThat(ex.getMessage()).contains("bytes[] can not be null");
   }
 
   @Test
   void testToRecordArrayWithZeroBytes() {
-    assertThrows(EOFException.class, () -> {
-      ByteArrayToLoadBatch.toRecordArray(new byte[0]);
-    });
+    assertThrows(EOFException.class, () -> ByteArrayToRecordMapper.toRecordArray(new byte[0]));
   }
 
   @Test
   void testToRecordArrayWithBytes() throws IOException {
-    Sensor[] sensorArray1 = new Sensor[]{
+    List<Sensor> sensorArray1 = Arrays.asList(
       new Sensor("1", new Random().nextInt()),
       new Sensor("2", new Random().nextInt()),
       new Sensor("3", new Random().nextInt()),
       new Sensor("4", new Random().nextInt()),
       new Sensor("5", new Random().nextInt())
-    };
+    );
 
-    Sensor[] sensorArray2 = new Sensor[]{
-      new Sensor("1", new Random().nextInt()),
-      new Sensor("2", new Random().nextInt()),
-      new Sensor("3", new Random().nextInt()),
-      new Sensor("4", new Random().nextInt()),
-      new Sensor("5", new Random().nextInt())
-    };
+    List<Sensor> sensorArray2 = Arrays.asList(
+      new Sensor("101", new Random().nextInt()),
+      new Sensor("102", new Random().nextInt()),
+      new Sensor("103", new Random().nextInt()),
+      new Sensor("104", new Random().nextInt()),
+      new Sensor("105", new Random().nextInt())
+    );
     Record[] recordArray = new Record[]{
       new Record(1L, System.currentTimeMillis(), "Valencia", sensorArray1),
       new Record(1L, System.currentTimeMillis(), "Geneva", sensorArray2)
     };
     byte[] recordArrayBytes = recordArrayToBytes(recordArray);
-    Record[] value = ByteArrayToLoadBatch.toRecordArray(recordArrayBytes);
+    Record[] value = ByteArrayToRecordMapper.toRecordArray(recordArrayBytes);
     assertThat(value).isEqualTo(recordArray);
   }
 
@@ -202,12 +193,12 @@ class ByteArrayToLoadBatchTest {
     return baos.toByteArray();
   }
 
-  private byte[] sensorArrayToBytes(Sensor[] sensorArray) throws IOException {
+  private byte[] sensorArrayToBytes(List<Sensor> sensorArray) throws IOException {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     DataOutputStream dos = new DataOutputStream(baos);
 
     // Length
-    dos.writeInt(sensorArray.length);
+    dos.writeInt(sensorArray.size());
 
     for (Sensor sensor : sensorArray) {
       dos.write(sensorToBytes(sensor));

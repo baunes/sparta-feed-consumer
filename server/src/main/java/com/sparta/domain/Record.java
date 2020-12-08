@@ -1,6 +1,7 @@
 package com.sparta.domain;
 
-import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 public class Record {
@@ -8,9 +9,9 @@ public class Record {
   private final Long recordIndex;
   private final Long timestamp;
   private final String city;
-  private final Sensor[] sensor;
+  private final List<Sensor> sensor;
 
-  public Record(Long recordIndex, Long timestamp, String city, Sensor[] sensor) {
+  public Record(Long recordIndex, Long timestamp, String city, List<Sensor> sensor) {
     this.recordIndex = recordIndex;
     this.timestamp = timestamp;
     this.city = city;
@@ -29,8 +30,8 @@ public class Record {
     return city;
   }
 
-  public Sensor[] getSensor() {
-    return Arrays.copyOf(this.sensor, this.sensor.length);
+  public List<Sensor> getSensor() {
+    return Collections.unmodifiableList(sensor);
   }
 
   @Override
@@ -41,13 +42,11 @@ public class Record {
     return Objects.equals(recordIndex, record.recordIndex) &&
       Objects.equals(timestamp, record.timestamp) &&
       Objects.equals(city, record.city) &&
-      Arrays.equals(sensor, record.sensor);
+      Objects.equals(sensor, record.sensor);
   }
 
   @Override
   public int hashCode() {
-    int result = Objects.hash(recordIndex, timestamp, city);
-    result = 31 * result + Arrays.hashCode(sensor);
-    return result;
+    return Objects.hash(recordIndex, timestamp, city, sensor);
   }
 }
