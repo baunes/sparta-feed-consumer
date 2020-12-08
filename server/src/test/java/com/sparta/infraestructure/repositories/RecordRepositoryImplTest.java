@@ -1,7 +1,7 @@
 package com.sparta.infraestructure.repositories;
 
-import com.sparta.domain.Record;
-import com.sparta.domain.RecordRepository;
+import com.sparta.domain.records.Record;
+import com.sparta.domain.records.RecordRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

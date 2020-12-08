@@ -1,4 +1,4 @@
-package com.sparta.domain;
+package com.sparta.domain.records;
 
 import java.util.Collections;
 import java.util.List;

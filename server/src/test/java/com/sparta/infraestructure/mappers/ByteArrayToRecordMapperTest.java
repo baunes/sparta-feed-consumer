@@ -1,7 +1,7 @@
 package com.sparta.infraestructure.mappers;
 
-import com.sparta.domain.Record;
-import com.sparta.domain.Sensor;
+import com.sparta.domain.records.Record;
+import com.sparta.domain.records.Sensor;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
