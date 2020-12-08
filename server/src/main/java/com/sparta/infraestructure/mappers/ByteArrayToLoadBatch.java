@@ -27,8 +27,9 @@ public final class ByteArrayToLoadBatch {
    */
   public static String toString(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
-    DataInputStream dis = toDataOutputStream(bytes);
-    return readString(dis);
+    try (DataInputStream dis = toDataOutputStream(bytes)) {
+      return readString(dis);
+    }
   }
 
   private static String readString(DataInputStream dis) throws IOException {
@@ -46,9 +47,9 @@ public final class ByteArrayToLoadBatch {
    */
   public static Sensor toSensor(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
-    DataInputStream dis = toDataOutputStream(bytes);
-
-    return readSensor(dis);
+    try (DataInputStream dis = toDataOutputStream(bytes)) {
+      return readSensor(dis);
+    }
   }
 
   private static Sensor readSensor(DataInputStream dis) throws IOException {
@@ -66,9 +67,9 @@ public final class ByteArrayToLoadBatch {
    */
   public static Sensor[] toSensorArray(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
-    DataInputStream dis = toDataOutputStream(bytes);
-
-    return readSensorArray(dis);
+    try (DataInputStream dis = toDataOutputStream(bytes)) {
+      return readSensorArray(dis);
+    }
   }
 
   private static Sensor[] readSensorArray(DataInputStream dis) throws IOException {
@@ -89,9 +90,9 @@ public final class ByteArrayToLoadBatch {
    */
   public static Record toRecord(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
-    DataInputStreamWithCRC dis = toDataOutputStream(bytes);
-
-    return readRecord(dis);
+    try (DataInputStreamWithCRC dis = toDataOutputStream(bytes)) {
+      return readRecord(dis);
+    }
   }
 
   private static Record readRecord(DataInputStreamWithCRC dis) throws IOException {
@@ -121,17 +122,18 @@ public final class ByteArrayToLoadBatch {
    */
   public static Record[] toRecordArray(byte[] bytes) throws IOException {
     Objects.requireNonNull(bytes, "bytes[] can not be null");
-    DataInputStreamWithCRC dis = toDataOutputStream(bytes);
+    try (DataInputStreamWithCRC dis = toDataOutputStream(bytes)) {
 
-    // Length
-    long length = dis.readLong();
+      // Length
+      long length = dis.readLong();
 
-    Record[] records = new Record[(int) length];
-    for (int index = 0; index < length; index++) {
-      records[index] = readRecord(dis);
+      Record[] records = new Record[(int) length];
+      for (int index = 0; index < length; index++) {
+        records[index] = readRecord(dis);
+      }
+
+      return records;
     }
-
-    return records;
   }
 
   private static DataInputStreamWithCRC toDataOutputStream(byte[] content) {
